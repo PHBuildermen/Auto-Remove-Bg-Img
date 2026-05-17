@@ -6,28 +6,29 @@
     <title>ClearCut • Background Remover</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
     <div class="max-w-4xl mx-auto p-6">
         <h1 class="text-4xl font-bold text-center mb-1">ClearCut</h1>
         <p class="text-cyan-400 text-center mb-8">Auto Background Remover</p>
 
-        <!-- Upload -->
+        <!-- Upload Area -->
         <div id="upload-zone" class="border-2 border-dashed border-zinc-600 hover:border-cyan-400 bg-zinc-900 rounded-3xl p-12 text-center cursor-pointer">
             <input type="file" id="file-input" accept="image/*" class="hidden">
-            <i class="fa-solid fa-cloud-arrow-up text-6xl text-zinc-400 mb-4"></i>
-            <p class="text-xl mb-2">Tap to upload image</p>
-            <button onclick="triggerFileSelect()" 
-                    class="mt-4 px-10 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-2xl text-lg">
-                SELECT IMAGE
+            
+            <i class="fa-solid fa-cloud-arrow-up text-6xl text-zinc-400 mb-6"></i>
+            <p class="text-xl mb-6">Tap below to choose photo from gallery</p>
+            
+            <button onclick="selectImage()" 
+                    class="w-full py-5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xl rounded-2xl active:scale-95 transition-all">
+                📸 SELECT IMAGE FROM GALLERY
             </button>
         </div>
 
-        <!-- Original Preview -->
+        <!-- Preview -->
         <div id="preview-section" class="hidden mt-8">
             <p class="text-zinc-400 mb-3">Original Image</p>
-            <img id="original-preview" class="w-full rounded-2xl border border-zinc-700 max-h-[400px] object-contain">
+            <img id="original-preview" class="w-full rounded-2xl border border-zinc-700 max-h-[400px] object-contain bg-black">
         </div>
 
         <!-- Controls -->
@@ -41,19 +42,19 @@
         <!-- Loading -->
         <div id="loading-state" class="hidden mt-10 text-center">
             <div class="w-20 h-20 border-4 border-zinc-700 border-t-cyan-400 rounded-full animate-spin mx-auto"></div>
-            <p class="mt-6 text-lg font-medium" id="status-text">Processing...</p>
+            <p class="mt-6 text-lg" id="status-text">Removing background...</p>
         </div>
 
         <!-- Result -->
         <div id="result-section" class="hidden mt-8">
-            <p class="text-zinc-400 mb-3">Result - Background Removed</p>
+            <p class="text-emerald-400 mb-3">✅ Background Removed</p>
             <img id="result-preview" class="w-full rounded-2xl border border-emerald-500 cursor-pointer" onclick="downloadResult()">
             <button onclick="downloadResult()" class="mt-6 w-full py-5 bg-emerald-500 text-black font-bold rounded-3xl">
-                DOWNLOAD PNG
+                📥 DOWNLOAD IMAGE
             </button>
         </div>
     </div>
 
     <script src="js/script.js"></script>
 </body>
-</html>
+    </html>
