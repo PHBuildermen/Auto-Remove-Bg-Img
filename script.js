@@ -1,106 +1,167 @@
-let originalFile = null;
-let resultImageUrl = null;
+// ==========================================
+// 1. API CONFIGURATION
+// ==========================================
+const REMOVE_BG_API_KEY = 'Ln5WMsBZiZkBven7BztxxQsH';
 
-function triggerFileSelect() {
-    document.getElementById('file-input').click();
-}
+// ==========================================
+// 2. DOM ELEMENTS
+// ==========================================
+const imageInput = document.getElementById('imageInput');
+const previewSection = document.getElementById('previewSection');
+const optionsSection = document.getElementById('optionsSection');
+const resultSection = document.getElementById('resultSection');
+const imagePreview = document.getElementById('imagePreview');
+const imageResult = document.getElementById('imageResult');
+const submitBtn = document.getElementById('submitBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const errorMessage = document.getElementById('errorMessage');
+const sizeSelect = document.getElementById('sizeSelect');
+const ratioSelect = document.getElementById('ratioSelect');
 
-function init() {
-    console.log("%c✅ Script Loaded Successfully", "color: cyan; font-size: 16px");
+let selectedFile = null;
+let processedBlob = null;
 
-    const fileInput = document.getElementById('file-input');
-    
-    fileInput.addEventListener('change', function(e) {
-        console.log("📸 File input changed", e.target.files);
-        if (e.target.files && e.target.files[0]) {
-            handleFile(e.target.files[0]);
-        }
-    });
+// ==========================================
+// 3. EVENT LISTENERS
+// ==========================================
 
-    // Click on upload zone also opens file picker
-    document.getElementById('upload-zone').addEventListener('click', function(e) {
-        if (e.target.tagName !== "BUTTON") {
-            triggerFileSelect();
-        }
-    });
-}
+// Handle Image Selection
+imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-function handleFile(file) {
-    console.log("✅ File selected:", file.name, file.type);
-
-    if (!file.type.startsWith('image/')) {
-        alert("Please select a valid image file");
+    // Validate file type
+    if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+        showError("Invalid file type. Please upload a JPG or PNG.");
         return;
     }
 
-    originalFile = file;
-
+    selectedFile = file;
+    
+    // Show Preview
     const reader = new FileReader();
-    reader.onload = function(e) {
-        console.log("✅ Image loaded into preview");
-        document.getElementById('original-preview').src = e.target.result;
-        document.getElementById('preview-section').classList.remove('hidden');
-        document.getElementById('controls-section').classList.remove('hidden');
-        
-        // Scroll to preview
-        document.getElementById('preview-section').scrollIntoView({ behavior: "smooth" });
+    reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        previewSection.style.display = 'block';
+        optionsSection.style.display = 'block';
+        resultSection.style.display = 'none'; // Hide previous results
+        errorMessage.textContent = ''; // Clear errors
     };
     reader.readAsDataURL(file);
-}
+});
 
-async function processImage() {
-    if (!originalFile) {
-        alert("Please upload an image first");
+// Handle Background Removal Submit
+submitBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    
+    if (REMOVE_BG_API_KEY === 'PASTE_YOUR_API_KEY_HERE' || REMOVE_BG_API_KEY === '') {
+        showError("Error: Please paste a valid Remove.bg API key in script.js");
         return;
     }
 
-    document.getElementById('loading-state').classList.remove('hidden');
-    document.getElementById('submit-btn').disabled = true;
-    document.getElementById('status-text').textContent = "Removing background...";
+    // Set Loading State
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Processing (Please wait)...';
+    errorMessage.textContent = '';
+    resultSection.style.display = 'none';
 
     try {
-        // Simple client-side removal using canvas (for now)
-        const resultBlob = await simpleBackgroundRemoval(originalFile);
-        resultImageUrl = URL.createObjectURL(resultBlob);
+        const formData = new FormData();
+        formData.append('image_file', selectedFile);
+        formData.append('size', 'auto'); // Let the API return best size
 
-        document.getElementById('result-preview').src = resultImageUrl;
-        document.getElementById('result-section').classList.remove('hidden');
+        // Call Remove.bg API
+        const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+            method: 'POST',
+            headers: { 'X-Api-Key': REMOVE_BG_API_KEY },
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
         
-        document.getElementById('result-section').scrollIntoView({ behavior: "smooth" });
-    } catch (err) {
-        console.error(err);
-        alert("Sorry, background removal failed. Try another image.");
+        // Process sizing and ratio via Canvas
+        await processAndDisplayFinalImage(blob);
+
+    } catch (error) {
+        showError("Failed to process image. " + error.message);
     } finally {
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('submit-btn').disabled = false;
+        // Reset Button State
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Remove Background';
     }
-}
+});
 
-// Simple canvas-based removal (works immediately)
-async function simpleBackgroundRemoval(file) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
+// Handle Download
+downloadBtn.addEventListener('click', () => {
+    if (!processedBlob) return;
+    const url = URL.createObjectURL(processedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'no-bg-result.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+// ==========================================
+// 4. HELPER FUNCTIONS
+// ==========================================
+
+// Draw API result to canvas to apply Size and Ratio logic
+async function processAndDisplayFinalImage(imageBlob) {
+    const imgURL = URL.createObjectURL(imageBlob);
+    const img = new Image();
+    
+    img.onload = () => {
+        // Calculate dimensions based on user selection
+        let finalWidth = img.width;
+        let finalHeight = img.height;
+
+        // 1. Apply Size (Width)
+        const sizeVal = sizeSelect.value;
+        if (sizeVal !== 'original') {
+            finalWidth = parseInt(sizeVal);
+            finalHeight = (img.height / img.width) * finalWidth; // Keep ratio initially
+        }
+
+        // 2. Apply Aspect Ratio (Modifies Height based on new Width)
+        const ratioVal = ratioSelect.value;
+        if (ratioVal !== 'original') {
+            const [wRatio, hRatio] = ratioVal.split(':').map(Number);
+            finalHeight = (finalWidth / wRatio) * hRatio;
+        }
+
+        // 3. Draw on Canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = finalWidth;
+        canvas.height = finalHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Center the image inside the new layout bounds seamlessly
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const x = (canvas.width / 2) - (img.width / 2) * scale;
+        const y = (canvas.height / 2) - (img.height / 2) * scale;
+
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+        // Convert canvas back to blob for download/display
+        canvas.toBlob((newBlob) => {
+            processedBlob = newBlob;
+            imageResult.src = URL.createObjectURL(newBlob);
+            resultSection.style.display = 'block';
             
-            // For demo: just return the image as PNG with transparency support
-            canvas.toBlob(resolve, 'image/png');
-        };
-        img.src = URL.createObjectURL(file);
-    });
+            // Scroll to result smoothly
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }, 'image/png');
+    };
+    img.src = imgURL;
 }
 
-function downloadResult() {
-    if (resultImageUrl) {
-        const link = document.createElement('a');
-        link.href = resultImageUrl;
-        link.download = 'clearcut-no-background.png';
-        link.click();
-    }
+function showError(msg) {
+    errorMessage.textContent = msg;
 }
-
-window.onload = init;
