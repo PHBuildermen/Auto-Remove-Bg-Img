@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+
+:root {
+    --primary: 34 211 238;
+}
+
+body {
+    font-family: 'Inter', system_ui, sans-serif;
+}
+
+.heading {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.upload-zone {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-zone:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.preview-img {
+    max-height: 380px;
+    object-fit: contain;
+}
+
+.result-card {
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+}
