@@ -8,64 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-zinc-950 text-zinc-200">
-    <div class="max-w-4xl mx-auto p-4 py-8">
-        <h1 class="text-4xl font-bold text-center mb-2">ClearCut</h1>
-        <p class="text-center text-cyan-400 mb-8">Auto Background Remover</p>
+<body class="bg-zinc-950 text-white min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-4xl font-bold text-center mb-1">ClearCut</h1>
+        <p class="text-cyan-400 text-center mb-8">Auto Background Remover</p>
 
-        <!-- Upload Area -->
-        <div id="upload-zone" class="border-2 border-dashed border-zinc-600 hover:border-cyan-400 rounded-3xl p-10 text-center cursor-pointer bg-zinc-900 min-h-[300px]">
+        <!-- Upload -->
+        <div id="upload-zone" class="border-2 border-dashed border-zinc-600 hover:border-cyan-400 bg-zinc-900 rounded-3xl p-12 text-center cursor-pointer">
             <input type="file" id="file-input" accept="image/*" class="hidden">
-            <i class="fa-solid fa-cloud-arrow-up text-6xl mb-4 text-zinc-400"></i>
-            <p class="text-xl">Drop or tap to upload image</p>
-            <button onclick="document.getElementById('file-input').click()" 
-                    class="mt-6 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-2xl">
+            <i class="fa-solid fa-cloud-arrow-up text-6xl text-zinc-400 mb-4"></i>
+            <p class="text-xl mb-2">Tap to upload image</p>
+            <button onclick="triggerFileSelect()" 
+                    class="mt-4 px-10 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-2xl text-lg">
                 SELECT IMAGE
             </button>
         </div>
 
         <!-- Original Preview -->
         <div id="preview-section" class="hidden mt-8">
-            <p class="text-sm text-zinc-400 mb-2">Original Image</p>
-            <img id="original-preview" class="w-full rounded-2xl border border-zinc-700">
+            <p class="text-zinc-400 mb-3">Original Image</p>
+            <img id="original-preview" class="w-full rounded-2xl border border-zinc-700 max-h-[400px] object-contain">
         </div>
 
         <!-- Controls -->
         <div id="controls-section" class="hidden mt-6">
             <button onclick="processImage()" id="submit-btn"
-                    class="w-full py-5 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg rounded-2xl">
-                🚀 REMOVE BACKGROUND
+                    class="w-full py-6 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-xl rounded-3xl">
+                REMOVE BACKGROUND
             </button>
         </div>
 
         <!-- Loading -->
-        <div id="loading-state" class="hidden mt-8 text-center">
-            <div class="w-16 h-16 border-4 border-zinc-700 border-t-cyan-400 rounded-full animate-spin mx-auto"></div>
-            <p class="mt-4 font-medium" id="status-text">Uploading image...</p>
-            <p class="text-sm text-zinc-500 mt-1" id="progress-text">0%</p>
+        <div id="loading-state" class="hidden mt-10 text-center">
+            <div class="w-20 h-20 border-4 border-zinc-700 border-t-cyan-400 rounded-full animate-spin mx-auto"></div>
+            <p class="mt-6 text-lg font-medium" id="status-text">Processing...</p>
         </div>
 
         <!-- Result -->
         <div id="result-section" class="hidden mt-8">
-            <p class="text-sm text-zinc-400 mb-2">Result (Transparent Background)</p>
-            <img id="result-preview" class="w-full rounded-2xl border border-zinc-700 cursor-pointer" onclick="downloadResult()">
-            <button onclick="downloadResult()" 
-                    class="mt-4 w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">
-                📥 DOWNLOAD PNG
+            <p class="text-zinc-400 mb-3">Result - Background Removed</p>
+            <img id="result-preview" class="w-full rounded-2xl border border-emerald-500 cursor-pointer" onclick="downloadResult()">
+            <button onclick="downloadResult()" class="mt-6 w-full py-5 bg-emerald-500 text-black font-bold rounded-3xl">
+                DOWNLOAD PNG
             </button>
-        </div>
-    </div>
-
-    <!-- API Key Modal -->
-    <div id="api-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-md mx-4">
-            <h3 class="text-xl font-bold mb-4">Enter Your Remove.bg API Key</h3>
-            <input id="api-key-input" type="password" placeholder="sk-XXXXXXXXXXXXXXXX" 
-                   class="w-full p-4 bg-zinc-800 rounded-2xl border border-zinc-700 mb-4">
-            <button onclick="saveApiKey()" class="w-full py-4 bg-cyan-400 text-black font-bold rounded-2xl">Save Key</button>
-            <p class="text-xs text-center text-zinc-500 mt-4">
-                Get free key from <a href="https://www.remove.bg/api" target="_blank" class="text-cyan-400">remove.bg</a>
-            </p>
         </div>
     </div>
 
