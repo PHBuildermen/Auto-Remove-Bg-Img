@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearCut • Auto Background Remover</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-zinc-950 text-zinc-200 min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10">
+            <div class="flex items-center gap-x-3">
+                <div class="w-9 h-9 bg-cyan-400 rounded-2xl flex items-center justify-center text-zinc-950 font-bold text-2xl">C</div>
+                <h1 class="heading text-3xl font-semibold tracking-tight">ClearCut</h1>
+            </div>
+            <div class="text-sm text-zinc-400 flex items-center gap-x-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>AI Background Removal</span>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-10">
+            <!-- Left Column: Input -->
+            <div>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-2">Upload your photo</h2>
+                    <p class="text-zinc-400">We'll automatically remove the background</p>
+                </div>
+
+                <!-- Upload Area -->
+                <div id="upload-zone" class="upload-zone border-2 border-dashed border-zinc-700 hover:border-cyan-400 rounded-3xl p-12 text-center cursor-pointer bg-zinc-900">
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up text-5xl text-zinc-500 mb-4"></i>
+                    <p class="text-lg font-medium mb-1">Drop image here or</p>
+                    <button onclick="document.getElementById('file-input').click()" 
+                            class="px-6 py-3 bg-white text-zinc-900 rounded-2xl font-semibold hover:bg-cyan-400 transition-colors">
+                        Browse Files
+                    </button>
+                    <p class="text-xs text-zinc-500 mt-6">PNG, JPG, JPEG • Max 10MB</p>
+                </div>
+
+                <!-- Preview -->
+                <div id="preview-section" class="hidden mt-8">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-medium">Original Image</h3>
+                        <button onclick="resetApp()" class="text-xs px-4 py-2 text-zinc-400 hover:text-white flex items-center gap-x-1">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Upload New</span>
+                        </button>
+                    </div>
+                    <div class="bg-zinc-900 rounded-3xl p-4 border border-zinc-800">
+                        <img id="original-preview" class="preview-img w-full rounded-2xl mx-auto" alt="Original">
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div id="controls-section" class="hidden mt-8 space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">Output Resolution</label>
+                            <select id="resolution-select" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400">
+                                <option value="512">512 × 512</option>
+                                <option value="1024" selected>1024 × 1024</option>
+                                <option value="1080">1080 × 1080</option>
+                                <option value="1280">1280 × 1280</option>
+                                <option value="1920">1920 × 1920</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">Aspect Ratio</label>
+                            <select id="ratio-select" onchange="updateSizeOptions()" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400">
+                                <option value="1:1" selected>1:1 Square</option>
+                                <option value="4:5">4:5 Portrait</option>
+                                <option value="16:9">16:9 Landscape</option>
+                                <option value="9:16">9:16 Story</option>
+                                <option value="3:2">3:2 Classic</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="processImage()" id="submit-btn"
+                            class="w-full py-6 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-zinc-950 font-semibold text-lg rounded-3xl transition-all active:scale-95 flex items-center justify-center gap-x-3 shadow-xl shadow-cyan-500/30">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Remove Background</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Result -->
+            <div>
+                <div id="result-section" class="hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-medium">Result</h3>
+                        <div class="flex gap-x-2">
+                            <button onclick="downloadResult()" class="flex items-center gap-x-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm">
+                                <i class="fa-solid fa-download"></i>
+                                <span>Download PNG</span>
+                            </button>
+                            <button onclick="resetApp()" class="px-5 py-2.5 text-zinc-400 hover:text-white">
+                                New Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="result-card rounded-3xl p-6 border border-zinc-200/10 shadow-2xl">
+                        <div class="bg-white/5 rounded-2xl p-4">
+                            <img id="result-preview" class="preview-img w-full rounded-2xl mx-auto" alt="Result">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center text-xs text-zinc-500">
+                        Transparent background • Ready for design
+                    </div>
+                </div>
+
+                <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center py-20">
+                    <div class="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-image text-5xl text-zinc-700"></i>
+                    </div>
+                    <p class="text-zinc-400 max-w-xs">Your processed image with transparent background will appear here</p>
+                </div>
+
+                <div id="loading-state" class="hidden flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 border-4 border-zinc-700 border-t-cyan-400 rounded-full animate-spin mb-6"></div>
+                    <p class="font-medium">Removing background...</p>
+                    <p class="text-sm text-zinc-500 mt-2">This usually takes 5-12 seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div id="api-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-zinc-900 rounded-3xl max-w-md w-full mx-4 p-8">
+            <h3 class="text-xl font-semibold mb-2">Remove.bg API Key</h3>
+            <p class="text-zinc-400 text-sm mb-6">
+                Get your free API key at <a href="https://www.remove.bg/api" target="_blank" class="text-cyan-400 underline">remove.bg/api</a>
+            </p>
+            
+            <input id="api-key-input" type="password" placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXX" 
+                   class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 text-white focus:outline-none mb-6">
+            
+            <div class="flex gap-3">
+                <button onclick="saveApiKey()" class="flex-1 py-4 bg-cyan-400 text-zinc-950 font-semibold rounded-2xl">Save Key</button>
+                <button onclick="hideApiModal()" class="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl">Cancel</button>
+            </div>
+            <p class="text-[10px] text-center text-zinc-500 mt-6">Your key is stored only in your browser (localStorage)</p>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
