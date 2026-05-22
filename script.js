@@ -1,7 +1,7 @@
 // ==========================================
 // 1. API CONFIGURATION
 // ==========================================
-const REMOVE_BG_API_KEY = 'fqTaPtSSSrfARZBEd2vP3RsJ';
+const REMOVE_BG_API_KEY = 'kTTwkLskUF1s8me2ng3PvbV8';
 
 // ==========================================
 // 2. DOM ELEMENTS
